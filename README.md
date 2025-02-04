@@ -1,19 +1,33 @@
-## Foundry
+# MiL.k Smart Contracts
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This repository contains the core smart contracts for the MiL.k service.
 
-Foundry consists of:
+- [MiL.k Alliance](https://milkalliance.io/)
+- [MiL.k Service](https://milkplay.com/?lang=en)
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Contracts
 
-## Documentation
+### Token
 
-https://book.getfoundry.sh/
+- [**Token**](./src/Token.sol) : A burnable and permitable ERC20 Token with 8 decimals.
+
+### Account Abstraction ([EIP-4337](https://eips.ethereum.org/EIPS/eip-4337))
+
+- [**Account**](./src/Account.sol): A multi-sig account.
+- [**AccountFactory**](./src/AccountFactory.sol)
+- [**EntryPoint**](./src/EntryPoint.sol)
 
 ## Usage
+
+### Requirements
+
+- [Foundry](https://github.com/foundry-rs/foundry)
+
+### Install Dependency
+
+```shell
+$ forge soldeer install
+```
 
 ### Build
 
@@ -27,40 +41,6 @@ $ forge build
 $ forge test
 ```
 
-### Format
+## License
 
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+All smart contracts are released under GPL-3.0
