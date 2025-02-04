@@ -36,7 +36,7 @@ library ERC4337NaiveUtils {
     /**
      * @dev Decodes NaiveUserOperation's callData.
      */
-    function decodeCallData(NaiveUserOperation calldata userOp) external pure returns (address target, uint256 value, bytes calldata data) {
+    function decodeCallData(NaiveUserOperation calldata userOp) internal pure returns (address target, uint256 value, bytes calldata data) {
         target = userOp.callData.length < 20 ? address(0) : address(bytes20(userOp.callData[0:20]));
         value = userOp.callData.length < 52 ? 0 : uint256(bytes32(userOp.callData[20:52]));
         data = userOp.callData.length < 53 ? emptyBytes() : userOp.callData[52:];
