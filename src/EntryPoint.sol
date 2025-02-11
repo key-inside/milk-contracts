@@ -3,7 +3,6 @@ pragma solidity ^0.8.28;
 
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
-import {ERC4337NaiveUtils} from "./ERC4337NaiveUtils.sol";
 import {NaiveUserOperation, IAccount} from "./IERC4337Naive.sol";
 
 contract EntryPoint is ReentrancyGuardTransient {
