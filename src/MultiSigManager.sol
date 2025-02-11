@@ -8,6 +8,8 @@ abstract contract MultiSigManager {
     event RemovedOwner(address indexed account, address indexed owner);
     event ChangedThreshold(address indexed account, uint256 threshold);
 
+    uint256 public constant MAX_OWNER_COUNT = 16;
+
     address private constant PIVOT = address(0x1);
 
     mapping(address => address) private _owners;
@@ -51,6 +53,28 @@ abstract contract MultiSigManager {
      */
     error RequiresAtLeastOneOwner();
 
+    /**
+     * @dev Number of owners must not be over `MAX_OWNER_COUNT`.
+     */
+    error TooManyOwners();
+
+    constructor(address[] memory owners_, uint256 threshold_) {
+        require(owners_.length > 0, RequiresAtLeastOneOwner());
+        require(owners_.length <= MAX_OWNER_COUNT, TooManyOwners());
+
+        address marker = PIVOT;
+        for (uint256 i = 0; i < owners_.length; ++i) {
+            address owner = owners_[i];
+            _validateNewOwner(owner);
+            _owners[marker] = owner;
+            marker = owner;
+            emit AddedOwner(address(this), owner);
+        }
+        _owners[marker] = PIVOT;
+        _ownerCount = owners_.length;
+        _changeThreshold(threshold_);
+    }
+
     function isOwner(address account) public view returns (bool) {
         return account != PIVOT && _owners[account] != address(0);
     }
@@ -69,29 +93,14 @@ abstract contract MultiSigManager {
         return _threshold;
     }
 
-    function _initOwners(address[] memory owners_, uint256 threshold_) internal {
-        require(owners_.length > 0, RequiresAtLeastOneOwner());
-        require(threshold_ > 0 && threshold_ <= owners_.length, InvalidThreshold(threshold_));
-
-        address marker = PIVOT;
-        for (uint256 i = 0; i < owners_.length; ++i) {
-            address owner = owners_[i];
-            _validateNewOwner(owner);
-            _owners[marker] = owner;
-            marker = owner;
-            emit AddedOwner(address(this), owner);
-        }
-        _owners[marker] = PIVOT;
-        _ownerCount = owners_.length;
-        _changeThreshold(threshold_);
-    }
-
     function _validateNewOwner(address owner) private view {
         require(owner != address(0) && owner != PIVOT && owner != address(this), InvalidOwner(owner));
         require(_owners[owner] == address(0), DuplicatedOwner(owner));
     }
 
     function _addOwner(address owner, uint256 threshold_) internal {
+        require(_ownerCount < MAX_OWNER_COUNT, TooManyOwners());
+
         _validateNewOwner(owner);
         _owners[owner] = _owners[PIVOT];
         _owners[PIVOT] = owner;
@@ -103,6 +112,7 @@ abstract contract MultiSigManager {
     function _removeOwner(address owner, uint256 threshold_) internal {
         require(_ownerCount > 1, RequiresAtLeastOneOwner());
         require(owner != PIVOT && _owners[owner] != address(0), InvalidOwner(owner));
+
         address prev = _prevOwnerOf(owner);
         _owners[prev] = _owners[owner];
         _owners[owner] = address(0);
@@ -122,6 +132,7 @@ abstract contract MultiSigManager {
         emit AddedOwner(address(this), new_);
     }
 
+    // before invoking _changeThreshold, _ownerCount must be updated.
     function _changeThreshold(uint256 threshold_) internal {
         require(threshold_ > 0 && threshold_ <= _ownerCount, InvalidThreshold(threshold_)); 
         if (threshold_ != _threshold) {
@@ -151,11 +162,11 @@ abstract contract MultiSigManager {
      */
     function _validateSignature(bytes32 hash, bytes calldata signature) internal view {
         uint256 count = signature.length / 65;
-        require(count >= _threshold, NotEnoughSignatures(_threshold, count));
+        require(count >= _threshold, NotEnoughSignatures(_threshold, count));   // and _threshold > 0
 
         count = 0;  // reuse to count valid signatures
         address prev = address(0);
-        for (uint256 i = 0; (i < signature.length && count < _threshold); i += 65) {
+        for (uint256 i = 0; count < _threshold; i += 65) {
             address signer = ECDSA.recover(hash, signature[i:(i + 65)]);
             require(isOwner(signer), InvalidSignature(signer));
             require(signer > prev, InvalidSignatureOrder(signer));
