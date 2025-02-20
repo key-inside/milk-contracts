@@ -17,6 +17,10 @@ This repository contains the core smart contracts for the MiL.k service.
 - [**AccountFactory**](./src/AccountFactory.sol)
 - [**EntryPoint**](./src/EntryPoint.sol)
 
+### Vesting
+
+- [**TimeLockWallet**](./src/TimeLockWallet.sol)
+
 ## Usage
 
 ### Requirements
