@@ -18,6 +18,7 @@ contract TimeLockWallet is Ownable {
     event Released(uint256 indexed timestamp, uint256 amount);
 
     address private immutable _token;
+    address private immutable _spender;
     mapping(uint256 timestamp => uint256 amount) private _releasable;
     uint256 private _unreleased;    // total unreleased amount
 
@@ -47,10 +48,16 @@ contract TimeLockWallet is Ownable {
     error AlreadyScheduled(uint256 timestamp);
 
     /**
+     * @dev `msg.sender` is not `spender`.
+     */    
+    error Unauthorized();
+
+    /**
      * @dev Sets the ERC20 contract address and the beneficiary (owner) of the wallet.
      */
-    constructor(address token_, address beneficiary) Ownable(beneficiary) {
+    constructor(address token_, address spender_, address beneficiary) Ownable(beneficiary) {
         _token = token_;
+        _spender = spender_;
     }
 
     /**
@@ -58,6 +65,13 @@ contract TimeLockWallet is Ownable {
      */
     function token() public view returns (address) {
         return _token;
+    }
+
+    /**
+     * @dev Returns the address of the spender.
+     */
+    function spender() public view returns (address) {
+        return _spender;
     }
 
     /**
@@ -77,26 +91,18 @@ contract TimeLockWallet is Ownable {
     /**
      * @dev Spends token allowance and deposits into this wallet.
      * Before `deposit` is called, `msg.sender` must call {ERC20-approve} with sufficient amount.
+     * Only `spender` can deposit.
      *
      * Emits a {Deposited} event.
      */
     function deposit(uint256 amount, uint256 timestamp) external {
-        depositFrom(msg.sender, amount, timestamp);
-    }
-
-    /**
-     * @dev Spends token allowance and deposits into this wallet.
-     * Before `depositFrom` is called, `from` must call {ERC20-approve} with sufficient amount.
-     *
-     * Emits a {Deposited} event.
-     */
-    function depositFrom(address from, uint256 amount, uint256 timestamp) public {
+        require(msg.sender == _spender, Unauthorized());
         require(amount > 0, ZeroAmount());
         require(timestamp > block.timestamp, Expired(timestamp));
         require(_releasable[timestamp] == 0, AlreadyScheduled(timestamp));
 
         _releasable[timestamp] = amount;
-        IERC20(_token).safeTransferFrom(from, address(this), amount);
+        IERC20(_token).safeTransferFrom(_spender, address(this), amount);
         unchecked {
             _unreleased += amount;
         }
