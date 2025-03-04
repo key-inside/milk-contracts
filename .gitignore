@@ -16,5 +16,8 @@ docs/
 # OSX
 .DS_Store
 
+# VSCode
+.vscode
+
 # Soldeer
 /dependencies
