@@ -1,2 +1,5 @@
+@layerzerolabs/lz-evm-protocol-v2/=dependencies/@layerzerolabs-lz-evm-protocol-v2-3.0.100/
+@layerzerolabs/oapp-evm/=dependencies/@layerzerolabs-oapp-evm-0.3.2/
+@layerzerolabs/oft-evm/=dependencies/@layerzerolabs-oft-evm-3.1.4/
 @openzeppelin/contracts/=dependencies/@openzeppelin-contracts-5.2.0/
 forge-std/=dependencies/forge-std-1.9.6/src/

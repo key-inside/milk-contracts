@@ -18,6 +18,7 @@ docs/
 
 # VSCode
 .vscode
+.wake
 
 # Soldeer
 /dependencies
